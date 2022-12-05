@@ -3,13 +3,15 @@ import fetch from 'node-fetch'
 
 export class Server {
     ultraLight: boolean
+    flags: string[]
 
-    constructor(ultraLight = false) {
+    constructor(ultraLight = false, flags: string[] = []) {
         this.ultraLight = ultraLight
+        this.flags = flags
     }
 
     async start() {
-        const flags = this.ultraLight ? ['--ultra-light'] : []
+        const flags = this.ultraLight ? ['--ultra-light', ...this.flags] : this.flags
         return new Promise<void>(resolve => {
             System.runProcess(
                 'npx',
@@ -31,6 +33,14 @@ export class Server {
 
     async close() {
         await fetch('http://localhost:1633/meta/server', { method: 'DELETE' }).catch(() => {})
+    }
+
+    async getStamps() {
+        return (await (await fetch('http://localhost:1633/stamps')).json()).stamps
+    }
+
+    async deleteStamps() {
+        return await fetch('http://localhost:1633/stamps', { method: 'DELETE' })
     }
 
     async setDesktop(value: boolean) {
